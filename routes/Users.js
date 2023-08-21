@@ -45,31 +45,29 @@ router.post("/login", async (req, res) => {
       res.json({ error: "Sorry, you cannot login. You're blocked." });
     } else if (password !== user.password) {
       res.json({ error: "Wrong password. Please. try again!" });
+    } else if (user && password === user.password) {
+      await Users.update(
+        {
+          loginTime: new Date(),
+        },
+        {
+          where: {
+            email: email,
+          },
+        }
+      );
+      const accessToken = sign(
+        {
+          email: email,
+          id: user.id,
+        },
+        "secret"
+      );
+      res.json(accessToken);
     }
   } else if (!user) {
     // if not
     res.json({ error: "Email is not authenticated. Please, sign up!" });
-  }
-
-  if (user && password === user.password) {
-    await Users.update(
-      {
-        loginTime: new Date(),
-      },
-      {
-        where: {
-          email: email
-        },
-      }
-    );
-    const accessToken = sign(
-      {
-        email: email,
-        id: user.id,
-      },
-      "secret"
-    );
-    res.json(accessToken);
   }
 });
 
